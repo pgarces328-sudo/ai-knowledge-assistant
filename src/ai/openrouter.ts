@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type { AppConfig } from '../config/env.js';
+import type { AppConfig } from '../config/env.ts';
 
 import type { AskResult } from '../contracts/ask.js';
 
@@ -14,7 +14,7 @@ const modelSchema = z.object({
   pricing: z.object({
     prompt: z.string(),
     completion: z.string(),
-    request: z.string()
+    request: z.string().optional()
   }),
 
   architecture: z.object({
@@ -74,10 +74,13 @@ export function isVerifiedFreeTextModel(
 
   const model = parsed.data;
 
+  // El catálogo omite "request" cuando no hay cargo por solicitud.
   const prices = [
     model.pricing.prompt,
     model.pricing.completion,
-    model.pricing.request
+    ...(model.pricing.request === undefined
+      ? []
+      : [model.pricing.request])
   ];
 
   return (
